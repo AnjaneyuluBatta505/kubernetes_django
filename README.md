@@ -51,7 +51,7 @@ k8s apply -f kubernetes/django/service.yaml
 ```
 
 ### Setting up celery app
-In django app we have 2 `yaml` configuration files.
+In celery app we have 2 `yaml` configuration files.
 To setup the django app in k8s execute the below commands
 ```
 k8s apply -f kubernetes/celery/beat-deployment.yaml
@@ -59,9 +59,42 @@ k8s apply -f kubernetes/celery/worker-deployment.yaml
 ```
 
 ### Setting up flower app
-In django app we have 2 `yaml` configuration files.
+In flower app we have 2 `yaml` configuration files.
 To setup the django app in k8s execute the below commands
 ```
 k8s apply -f kubernetes/flower/deployment.yaml
 k8s apply -f kubernetes/flower/service.yaml
 ```
+## How to debug the pods for errors if any failures occurs ?
+```
+$ k8s get po
+NAME                             READY   STATUS      RESTARTS   AGE
+celery-beat-75b5f954-m2pzj       1/1     Running     0          64m
+celery-worker-56fc7b88f5-shd87   1/1     Running     0          61m
+django-688f76f576-kt4h6          1/1     Error       0          60m
+django-migrations-mhng7          0/1     Completed   0          59m
+flower-77bf99c799-9drnp          1/1     Running     87         20h
+postgres-76dc76ffbb-hzmdc        1/1     Running     2          23h
+redis-76f6f4857b-srxlw           1/1     Running     1          20h
+```
+We can debug the pod failure using command `k8s logs <pod name>`.
+Sometimes `k8s describe <name of k8s object>`
+
+## To access the django app in our local browser
+```
+$ k8s get svc
+NAME               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+django-service     NodePort    10.152.183.146   <none>        8000:32693/TCP   21h
+flower-service     NodePort    10.152.183.170   <none>        5555:30675/TCP   21h
+kubernetes         ClusterIP   10.152.183.1     <none>        443/TCP          25h
+postgres-service   ClusterIP   10.152.183.151   <none>        5432/TCP         24h
+redis-service      ClusterIP   10.152.183.89    <none>        6379/TCP         21h
+
+```
+Visit url "10.152.183.146:8000" (i.e `CLUSTER-IP:PORT`). It's just for testing.
+
+## References:
+
+1. https://microk8s.io/docs/
+2. https://kubernetes.io/docs/home/
+3. https://medium.com/edureka/what-is-kubernetes-container-orchestration-tool-d972741550f6 
